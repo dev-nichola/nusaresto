@@ -24,6 +24,6 @@ func Run() {
 		return ctx.SendString("HALO HALO HALO")
 	})
 
-	app.Listen("localhost:3000")
+	app.Listen("localhost:8080")
 
 }
