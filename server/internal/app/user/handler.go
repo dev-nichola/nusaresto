@@ -14,15 +14,55 @@ const (
 )
 
 func (user *UserRepositoryImpl) FindAll(c *fiber.Ctx) error {
+	var userData User
+	err := user.DB.QueryRowx(QUERY_FIND_ALL).StructScan(&userData)
+
+	if err != nil {
+		return c.JSON(fiber.Map{
+			"message": "error when getting user data",
+		})
+	}
+
 	return c.JSON(fiber.Map{
-		"data": 1,
+		"data": userData,
 	})
 }
 
 func (user *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "apa kek",
+		})
+	}
+
+	rows, err := user.DB.Queryx(QUERY_FIND_BY_ID, id)
+	defer rows.Close()
+
+	if err != nil {
+		return c.JSON(fiber.Map{
+			"message": "error when getting users",
+		})
+	}
+
+	var users []User
+
+	for rows.Next() {
+		var userData User
+		err := rows.Scan(&userData)
+
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "error when getting users data",
+			})
+		}
+
+		users = append(users, userData)
+	}
+
 	return c.JSON(fiber.Map{
-	return c.JSON(fiber.Map{
-		"data": 1,
+		"data": users,
 	})
 }
 
