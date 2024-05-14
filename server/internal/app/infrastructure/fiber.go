@@ -27,11 +27,11 @@ func Run() {
 
 	userRepo := user.NewUserRepository()
 
-	app.Get("/users", userRepo.FindAll)
-	app.Get("/users/:id", userRepo.FindById)
-	app.Post("/users/", userRepo.Save)
-	app.Patch("/users/:id", userRepo.Update)
-	app.Delete("/users/:id", userRepo.Delete)
+	v1.Get("/users", userRepo.FindAll)
+	v1.Get("/users/:id", userRepo.FindById)
+	v1.Post("/users/", userRepo.Save)
+	v1.Patch("/users/:id", userRepo.Update)
+	v1.Delete("/users/:id", userRepo.Delete)
 
 	app.Listen("localhost:8080")
 
