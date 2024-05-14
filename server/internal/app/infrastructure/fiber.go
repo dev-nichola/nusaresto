@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"time"
 
+	"github.com/dev-nichola/nusaresto/internal/app/user"
 	"github.com/dev-nichola/nusaresto/internal/pkg/helper"
 	"github.com/gofiber/fiber/v2"
 )
@@ -23,6 +24,14 @@ func Run() {
 	v1.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("HALO HALO HALO")
 	})
+
+	userRepo := user.NewUserRepository()
+
+	app.Get("/users", userRepo.FindAll)
+	app.Get("/users/:id", userRepo.FindById)
+	app.Post("/users/", userRepo.Save)
+	app.Patch("/users/:id", userRepo.Update)
+	app.Delete("/users/:id", userRepo.Delete)
 
 	app.Listen("localhost:8080")
 
