@@ -1,6 +1,9 @@
 package user
 
 import (
+	"database/sql"
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -13,18 +16,40 @@ const (
 	QUERY_DELETE_BY_ID = "DELETE FROM users WHERE id = $1"
 )
 
-func (user *UserRepositoryImpl) FindAll(c *fiber.Ctx) error {
-	var userData User
-	err := user.DB.QueryRowx(QUERY_FIND_ALL).StructScan(&userData)
+func (user UserRepositoryImpl) FindAll(c *fiber.Ctx) error {
+	var users []User
 
+	rows, err := user.DB.Queryx(QUERY_FIND_ALL)
 	if err != nil {
-		return c.JSON(fiber.Map{
-			"message": "error when getting user data",
+		if err == sql.ErrNoRows {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "user not found",
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when getting users",
 		})
 	}
 
+	defer rows.Close()
+
+	for rows.Next() {
+		var user User
+		err := rows.StructScan(&user)
+
+		if err != nil {
+			log.Println(err)
+			return c.JSON(fiber.Map{
+				"message": "error when getting users",
+			})
+		}
+
+		users = append(users, user)
+	}
+
 	return c.JSON(fiber.Map{
-		"data": userData,
+		"data": users,
 	})
 }
 
@@ -33,36 +58,34 @@ func (user *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "apa kek",
+			"message": "error when getting user",
 		})
 	}
 
-	rows, err := user.DB.Queryx(QUERY_FIND_BY_ID, id)
-	defer rows.Close()
-
+	rows := user.DB.QueryRowx(QUERY_FIND_BY_ID, id)
 	if err != nil {
-		return c.JSON(fiber.Map{
-			"message": "error when getting users",
-		})
-	}
-
-	var users []User
-
-	for rows.Next() {
-		var userData User
-		err := rows.Scan(&userData)
-
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "error when getting users data",
+		if err == sql.ErrNoRows {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "user not found",
 			})
 		}
 
-		users = append(users, userData)
+		return c.JSON(fiber.Map{
+			"message": "error when getting user",
+		})
+	}
+
+	var userData User
+	err = rows.StructScan(&userData)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when getting user data",
+		})
 	}
 
 	return c.JSON(fiber.Map{
-		"data": users,
+		"data": userData,
 	})
 }
 
