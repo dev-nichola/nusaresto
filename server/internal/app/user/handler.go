@@ -126,7 +126,33 @@ func (userRepo *UserRepositoryImpl) Update(c *fiber.Ctx) error {
 }
 
 func (userRepo *UserRepositoryImpl) Delete(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "invalid user id",
+		})
+	}
+
+	tx, err := userRepo.DB.Begin()
+	if err != nil {
+		tx.Rollback()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when preparing to delete user",
+		})
+	}
+
+	_, err = tx.Exec(QUERY_DELETE_BY_ID, id)
+	if err != nil {
+		tx.Rollback()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when deleting user",
+		})
+	}
+
+	tx.Commit()
 	return c.JSON(fiber.Map{
-		"data": 1,
+		"message": "successfully deleted user data",
 	})
 }
