@@ -16,10 +16,10 @@ const (
 	QUERY_DELETE_BY_ID = "DELETE FROM users WHERE id = $1"
 )
 
-func (user UserRepositoryImpl) FindAll(c *fiber.Ctx) error {
+func (userRepo UserRepositoryImpl) FindAll(c *fiber.Ctx) error {
 	var users []User
 
-	rows, err := user.DB.Queryx(QUERY_FIND_ALL)
+	rows, err := userRepo.DB.Queryx(QUERY_FIND_ALL)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -53,7 +53,7 @@ func (user UserRepositoryImpl) FindAll(c *fiber.Ctx) error {
 	})
 }
 
-func (user *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
+func (userRepo *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 
 	if err != nil {
@@ -62,7 +62,7 @@ func (user *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 		})
 	}
 
-	rows := user.DB.QueryRowx(QUERY_FIND_BY_ID, id)
+	rows := userRepo.DB.QueryRowx(QUERY_FIND_BY_ID, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -75,8 +75,8 @@ func (user *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 		})
 	}
 
-	var userData User
-	err = rows.StructScan(&userData)
+	var user User
+	err = rows.StructScan(&user)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -85,24 +85,24 @@ func (user *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"data": userData,
+		"data": user,
 	})
 }
 
-func (user *UserRepositoryImpl) Save(c *fiber.Ctx) error {
+func (userRepo *UserRepositoryImpl) Save(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"data": 1,
 	})
 }
 
-func (user *UserRepositoryImpl) Update(c *fiber.Ctx) error {
+func (userRepo *UserRepositoryImpl) Update(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"data": 1,
 	})
 
 }
 
-func (user *UserRepositoryImpl) Delete(c *fiber.Ctx) error {
+func (userRepo *UserRepositoryImpl) Delete(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"data": 1,
 	})
