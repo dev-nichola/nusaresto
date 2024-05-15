@@ -10,7 +10,7 @@ import (
 
 func Run() {
 
-	_, err := NewDB()
+	db, err := NewDB()
 	helper.PanicIfError(err)
 
 	app := fiber.New(fiber.Config{
@@ -25,7 +25,7 @@ func Run() {
 		return ctx.SendString("HALO HALO HALO")
 	})
 
-	userRepo := user.NewUserRepository()
+	userRepo := user.NewUserRepository(db)
 
 	v1.Get("/users", userRepo.FindAll)
 	v1.Get("/users/:id", userRepo.FindById)

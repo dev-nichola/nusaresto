@@ -17,6 +17,6 @@ type UserRepositoryImpl struct {
 	DB *sqlx.DB
 }
 
-func NewUserRepository() UserRepository {
-	return &UserRepositoryImpl{}
+func NewUserRepository(DB *sqlx.DB) UserRepository {
+	return &UserRepositoryImpl{DB: DB}
 }
