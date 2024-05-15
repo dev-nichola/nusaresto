@@ -19,6 +19,9 @@ cd client
 go run main.go
 ```
 
+Salin file `.env.example` dan beri nama file tersebut `.env`, dan isikan variabel
+dengan nilai yang sesuai.
+
 ### Client
 
 Untuk client, masuk ke folder `client` dan jalankan `pnpm run dev`. Aplikasi
