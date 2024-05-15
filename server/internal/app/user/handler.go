@@ -63,6 +63,9 @@ func (userRepo *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 	}
 
 	rows := userRepo.DB.QueryRowx(QUERY_FIND_BY_ID, id)
+
+	var user User
+	err = rows.StructScan(&user)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
@@ -70,15 +73,6 @@ func (userRepo *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 			})
 		}
 
-		return c.JSON(fiber.Map{
-			"message": "error when getting user",
-		})
-	}
-
-	var user User
-	err = rows.StructScan(&user)
-
-	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "error when getting user data",
 		})
