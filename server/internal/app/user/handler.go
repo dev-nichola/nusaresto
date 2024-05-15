@@ -11,8 +11,8 @@ import (
 const (
 	QUERY_FIND_ALL     = "SELECT * FROM users"
 	QUERY_FIND_BY_ID   = "SELECT * FROM users WHERE id = $1"
-	QUERY_SAVE         = "INSERT INTO users ..."              // TODO
-	QUERY_UPDATE       = "UPDATE users SET ... WHERE id = $1" // TODO
+	QUERY_SAVE         = "INSERT INTO users(name, email, password) values($1, $2, $3)" // TODO
+	QUERY_UPDATE       = "UPDATE users SET ... WHERE id = $1"                          // TODO
 	QUERY_DELETE_BY_ID = "DELETE FROM users WHERE id = $1"
 )
 
@@ -84,8 +84,38 @@ func (userRepo *UserRepositoryImpl) FindById(c *fiber.Ctx) error {
 }
 
 func (userRepo *UserRepositoryImpl) Save(c *fiber.Ctx) error {
+	var user User
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when saving user",
+		})
+	}
+
+	tx, err := userRepo.DB.Begin()
+	if err != nil {
+		tx.Rollback()
+		log.Println("error when starting transaction")
+		log.Println(err)
+
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when saving user",
+		})
+	}
+
+	result, err := tx.Exec(QUERY_SAVE, &user.Name, &user.Email, &user.Password)
+
+	if err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when saving user",
+		})
+	}
+
+	tx.Commit()
+
 	return c.JSON(fiber.Map{
-		"data": 1,
+		"message": "sucessfully saved new user",
+		"data":    result,
 	})
 }
 
@@ -93,12 +123,10 @@ func (userRepo *UserRepositoryImpl) Update(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"data": 1,
 	})
-
 }
 
 func (userRepo *UserRepositoryImpl) Delete(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"data": 1,
 	})
-
 }
