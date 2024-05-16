@@ -120,8 +120,39 @@ func (userRepo *UserRepositoryImpl) Save(c *fiber.Ctx) error {
 }
 
 func (userRepo *UserRepositoryImpl) Update(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "invalid user id",
+		})
+	}
+
+	var user User
+	err = c.BodyParser(&user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when parsing payload",
+		})
+	}
+
+	tx, err := userRepo.DB.Begin()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when trying to update user",
+		})
+	}
+
+	_, err = tx.Exec(QUERY_UPDATE, id, &user.Name, &user.Email)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when updating user data",
+		})
+	}
+
+	tx.Commit()
+
 	return c.JSON(fiber.Map{
-		"data": 1,
+		"message": fmt.Sprintf("successfully updated user of id %s", id),
 	})
 }
 
