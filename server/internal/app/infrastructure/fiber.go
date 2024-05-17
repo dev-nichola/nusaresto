@@ -21,7 +21,7 @@ func Run() {
 	v1 := app.Group("v1")
 
 	v1.Get("/", func(ctx *fiber.Ctx) error {
-		return ctx.SendString("HALO HALO HALO")
+		return ctx.Send([]byte("Hello World"))
 	})
 
 	app.Listen("localhost:8080")

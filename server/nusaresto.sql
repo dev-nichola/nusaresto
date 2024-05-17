@@ -53,7 +53,16 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: nusaresto
+--
+
+CREATE TABLE public.users (
+
 --
 -- PostgreSQL database dump complete
 --
+
+
 
