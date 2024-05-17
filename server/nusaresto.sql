@@ -35,14 +35,14 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO nusaresto;
+ALTER TABLE public.users OWNER TO nichola;
 
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: nusaresto
 --
 
 COPY public.users (id, name, email, password, created_at, updated_at, role_id) FROM stdin;
-\.
+
 
 
 --
@@ -53,7 +53,22 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
+
+
+-- 
+-- Name: menu; Type: TABLE; Schema: public; Owner: nusaresto
+-- 
+CREATE TABLE public.menu (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    update_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+)
+
 --
 -- PostgreSQL database dump complete
 --
+
+
 
