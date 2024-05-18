@@ -2,8 +2,10 @@ package user
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
+	"dario.cat/mergo"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -12,7 +14,7 @@ const (
 	QUERY_FIND_ALL     = "SELECT * FROM users"
 	QUERY_FIND_BY_ID   = "SELECT * FROM users WHERE id = $1"
 	QUERY_SAVE         = "INSERT INTO users(name, email, password) values($1, $2, $3)" // TODO
-	QUERY_UPDATE       = "UPDATE users SET ... WHERE id = $1"                          // TODO
+	QUERY_UPDATE       = "UPDATE users SET name=$2,email=$3 WHERE id = $1"             // TODO
 	QUERY_DELETE_BY_ID = "DELETE FROM users WHERE id = $1"
 )
 
@@ -128,10 +130,28 @@ func (userRepo *UserRepositoryImpl) Update(c *fiber.Ctx) error {
 	}
 
 	var user User
-	err = c.BodyParser(&user)
+
+	result := userRepo.DB.QueryRowx(QUERY_FIND_BY_ID, id)
+	err = result.StructScan(&user)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when checking existing user",
+		})
+	}
+
+	var incomingUser User
+	err = c.BodyParser(&incomingUser)
+
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "error when parsing payload",
+		})
+	}
+
+	if err := mergo.Merge(&incomingUser, user); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when updating user",
 		})
 	}
 
@@ -142,7 +162,7 @@ func (userRepo *UserRepositoryImpl) Update(c *fiber.Ctx) error {
 		})
 	}
 
-	_, err = tx.Exec(QUERY_UPDATE, id, &user.Name, &user.Email)
+	_, err = tx.Exec(QUERY_UPDATE, id, &incomingUser.Name, &incomingUser.Email)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "error when updating user data",
