@@ -7,8 +7,9 @@ import (
 )
 
 type Menu struct {
-	UUID       uuid.UUID
-	Name       string
-	Update_at  time.Time
-	Created_at time.Time
+	ID          uuid.UUID `json:"id,omitempty"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Update_at   time.Time `json:"update_at,omitempty"`
+	Created_at  time.Time `json:"created_at,omitempty"`
 }
