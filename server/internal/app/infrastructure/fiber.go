@@ -9,7 +9,6 @@ import (
 )
 
 func Run() {
-	DB, err := NewDB()
 	helper.PanicIfError(err)
 
 	menuRepository := menu.NewMenuRepository(DB)
