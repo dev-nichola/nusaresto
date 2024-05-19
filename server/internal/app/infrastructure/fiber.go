@@ -4,15 +4,16 @@ import (
 	"time"
 
 	"github.com/dev-nichola/nusaresto/internal/app/menu"
+	"github.com/dev-nichola/nusaresto/internal/app/user"
 	"github.com/dev-nichola/nusaresto/internal/pkg/helper"
 	"github.com/gofiber/fiber/v2"
 )
 
 func Run() {
-	DB, err := NewDB()
+	db, err := NewDB()
 	helper.PanicIfError(err)
 
-	menuRepository := menu.NewMenuRepository(DB)
+	menuRepository := menu.NewMenuRepository(db)
 	menuService := menu.NewMenuService(menuRepository)
 	menuHandler := menu.NewMenuHandler(menuService)
 
@@ -29,6 +30,14 @@ func Run() {
 	v1.Get("/menu/:id", menuHandler.FindById)
 	v1.Put("/menu/:id", menuHandler.Update)
 	v1.Delete("/menu/:id", menuHandler.Delete)
+
+	userRepo := user.NewUserRepository(db)
+
+	v1.Get("/users", userRepo.FindAll)
+	v1.Get("/users/:id", userRepo.FindById)
+	v1.Post("/users/", userRepo.Save)
+	v1.Patch("/users/:id", userRepo.Update)
+	v1.Delete("/users/:id", userRepo.Delete)
 
 	app.Listen("localhost:8080")
 }
