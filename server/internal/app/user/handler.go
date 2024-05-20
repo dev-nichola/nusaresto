@@ -28,14 +28,6 @@ func NewUserHandler(userService UserService) UserHandler {
 	}
 }
 
-const (
-	QUERY_FIND_ALL     = "SELECT * FROM users"
-	QUERY_FIND_BY_ID   = "SELECT * FROM users WHERE id = $1"
-	QUERY_SAVE         = "INSERT INTO users(name, email, password) values($1, $2, $3)" // TODO
-	QUERY_UPDATE       = "UPDATE users SET name=$2,email=$3 WHERE id = $1"             // TODO
-	QUERY_DELETE_BY_ID = "DELETE FROM users WHERE id = $1"
-)
-
 func (userRepo UserRepositoryImpl) FindAll(c *fiber.Ctx) error {
 	var users []User
 
