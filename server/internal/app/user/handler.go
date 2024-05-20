@@ -10,6 +10,24 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserHandler interface {
+	FindAll(ctx *fiber.Ctx) error
+	FindById(ctx *fiber.Ctx) error
+	Save(ctx *fiber.Ctx) error
+	Update(ctx *fiber.Ctx) error
+	Delete(ctx *fiber.Ctx) error
+}
+
+type UserHandlerImpl struct {
+	Service UserService
+}
+
+func NewUserHandler(userService UserService) UserHandler {
+	return &UserHandlerImpl{
+		Service: userService,
+	}
+}
+
 const (
 	QUERY_FIND_ALL     = "SELECT * FROM users"
 	QUERY_FIND_BY_ID   = "SELECT * FROM users WHERE id = $1"
