@@ -46,7 +46,16 @@ func (repo *UserRepositoryImpl) FindAll(ctx context.Context) ([]User, error) {
 
 	defer rows.Close()
 
-	rows.StructScan(&users)
+	for rows.Next() {
+		var user User
+		err := rows.StructScan(&user)
+		if err != nil {
+			return nil, fmt.Errorf("error when returning user: %w", err)
+		}
+
+		users = append(users, user)
+	}
+
 	return users, nil
 }
 
