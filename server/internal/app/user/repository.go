@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -23,8 +25,6 @@ func NewUserRepository(DB *sqlx.DB) UserRepository {
 	return &UserRepositoryImpl{DB: DB}
 }
 
-func (*UserRepositoryImpl) FindAll(ctx context.Context) ([]User, error) {
-	return nil, nil
 const (
 	QUERY_FIND_ALL     = "SELECT * FROM users"
 	QUERY_FIND_BY_ID   = "SELECT * FROM users WHERE id = $1"
@@ -33,20 +33,82 @@ const (
 	QUERY_DELETE_BY_ID = "DELETE FROM users WHERE id = $1"
 )
 
+func (repo *UserRepositoryImpl) FindAll(ctx context.Context) ([]User, error) {
+	var users []User
+	rows, err := repo.DB.QueryxContext(ctx, QUERY_FIND_ALL)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+
+		return nil, fmt.Errorf("error when querying user: %w", err)
+	}
+
+	defer rows.Close()
+
+	rows.StructScan(&users)
+	return users, nil
 }
 
-func (*UserRepositoryImpl) FindById(ctx context.Context, id uuid.UUID) (User, error) {
-	return User{}, nil
+func (repo *UserRepositoryImpl) FindById(ctx context.Context, id uuid.UUID) (User, error) {
+	var user User
+	row := repo.DB.QueryRowxContext(ctx, QUERY_FIND_BY_ID, id)
+	err := row.StructScan(&user)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, fmt.Errorf("user not found")
+		}
+		return user, fmt.Errorf("error when getting user: %w", err)
+	}
+
+	return user, nil
 }
 
-	return User{}, nil
 func (repo *UserRepositoryImpl) Save(ctx context.Context, user User) error {
+	tx, err := repo.DB.Begin()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error when starting transaction: %w", err)
+	}
+
+	_, err = tx.Exec(QUERY_SAVE, &user.Name, &user.Email, &user.Password)
+	if err != nil {
+		return fmt.Errorf("error when deleting user: %w", err)
+	}
+
+	tx.Commit()
+	return nil
 }
 
-	return User{}, nil
 func (userRepo *UserRepositoryImpl) Update(ctx context.Context, id uuid.UUID, user User) error {
+	tx, err := userRepo.DB.Begin()
+	if err != nil {
+		return fmt.Errorf("error when trying to update user: %w", err)
+	}
+
+	_, err = tx.ExecContext(ctx, QUERY_UPDATE, id, &user.Name, &user.Email)
+	if err != nil {
+		return fmt.Errorf("error when updating user data: %w", err)
+	}
+
+	tx.Commit()
+
+	return nil
 }
 
-func (*UserRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
+func (userRepo *UserRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	tx, err := userRepo.DB.Begin()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error when preparing to delete user")
+	}
+
+	_, err = tx.Exec(QUERY_DELETE_BY_ID, id)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error when deleting user")
+	}
+
 	return nil
 }
