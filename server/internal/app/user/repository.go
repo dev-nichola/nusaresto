@@ -10,8 +10,8 @@ import (
 type UserRepository interface {
 	FindAll(ctx context.Context) ([]User, error)
 	FindById(ctx context.Context, id uuid.UUID) (User, error)
-	Save(ctx context.Context, user User) (User, error)
-	Update(ctx context.Context, id uuid.UUID, user User) (User, error)
+	Save(ctx context.Context, user User) error
+	Update(ctx context.Context, id uuid.UUID, user User) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -39,12 +39,12 @@ func (*UserRepositoryImpl) FindById(ctx context.Context, id uuid.UUID) (User, er
 	return User{}, nil
 }
 
-func (*UserRepositoryImpl) Save(ctx context.Context, user User) (User, error) {
 	return User{}, nil
+func (repo *UserRepositoryImpl) Save(ctx context.Context, user User) error {
 }
 
-func (*UserRepositoryImpl) Update(ctx context.Context, id uuid.UUID, user User) (User, error) {
 	return User{}, nil
+func (userRepo *UserRepositoryImpl) Update(ctx context.Context, id uuid.UUID, user User) error {
 }
 
 func (*UserRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
