@@ -96,9 +96,15 @@ func (handler *UserHandlerImpl) Update(c *fiber.Ctx) error {
 
 	//TODO: handle error properly
 	user, err := handler.Service.FindById(c.Context(), id)
-	err = handler.Service.Update(c.Context(), id)
 
 	if err := mergo.Merge(&incomingUser, user); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error when updating user",
+		})
+	}
+
+	err = handler.Service.Update(c.Context(), id, incomingUser)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "error when updating user",
 		})

@@ -11,7 +11,7 @@ type UserService interface {
 	FindAll(ctx context.Context) ([]User, error)
 	FindById(ctx context.Context, id uuid.UUID) (User, error)
 	Save(ctx context.Context, user User) error
-	Update(ctx context.Context, id uuid.UUID) error
+	Update(ctx context.Context, id uuid.UUID, user User) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -50,10 +50,20 @@ func (service *UserServiceImpl) Save(ctx context.Context, user User) error {
 	return err
 }
 
-func (UserServiceImpl) Update(ctx context.Context, id uuid.UUID) error {
+func (service *UserServiceImpl) Update(ctx context.Context, id uuid.UUID, user User) error {
+	err := service.Repository.Update(ctx, id, user)
+	if err != nil {
+		return fmt.Errorf("error when deleting user: %w", err)
+	}
+
 	return nil
 }
 
-func (UserServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
+func (service *UserServiceImpl) Delete(ctx context.Context, id uuid.UUID) error {
+	err := service.Repository.Delete(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error when deleting user: %w", err)
+	}
+
 	return nil
 }
