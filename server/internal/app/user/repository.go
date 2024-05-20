@@ -119,5 +119,7 @@ func (userRepo *UserRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) er
 		return fmt.Errorf("error when deleting user")
 	}
 
+	tx.Commit()
+
 	return err
 }
