@@ -26,12 +26,14 @@ func Run() {
 	})
 
 	userRepo := user.NewUserRepository(db)
+	userService := user.NewUserService(userRepo)
+	userHandler := user.NewUserHandler(userService)
 
-	v1.Get("/users", userRepo.FindAll)
-	v1.Get("/users/:id", userRepo.FindById)
-	v1.Post("/users/", userRepo.Save)
-	v1.Patch("/users/:id", userRepo.Update)
-	v1.Delete("/users/:id", userRepo.Delete)
+	v1.Get("/users", userHandler.FindAll)
+	v1.Get("/users/:id", userHandler.FindById)
+	v1.Post("/users/", userHandler.Save)
+	v1.Patch("/users/:id", userHandler.Update)
+	v1.Delete("/users/:id", userHandler.Delete)
 
 	app.Listen("localhost:8080")
 
